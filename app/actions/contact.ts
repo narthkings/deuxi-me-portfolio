@@ -1,5 +1,7 @@
 "use server";
 
+import { Resend } from "resend";
+
 export type ContactState = {
   ok: boolean;
   message: string;
@@ -43,9 +45,13 @@ export async function submitContact(
     };
   }
 
-  const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const toEmail = process.env.CONTACT_TO_EMAIL?.trim();
+  const fromEmail =
+    process.env.CONTACT_FROM_EMAIL?.trim() ||
+    "Portfolio <onboarding@resend.com>";
 
-  if (!accessKey) {
+  if (!apiKey || !toEmail) {
     return {
       ok: false,
       message:
@@ -54,33 +60,25 @@ export async function submitContact(
   }
 
   try {
-    const response = await fetch("https://api.web3forms.com/submit", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        access_key: accessKey,
-        name,
-        email,
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: [toEmail],
+      replyTo: email,
+      subject: `Portfolio message from ${name}`,
+      text: [
+        `Name: ${name}`,
+        `Email: ${email}`,
+        "",
         message,
-        replyto: email,
-        subject: `Portfolio message from ${name}`,
-        from_name: "Dumto Imoh Portfolio",
-      }),
+      ].join("\n"),
     });
 
-    const result = (await response.json()) as {
-      success?: boolean;
-      message?: string;
-    };
-
-    if (!response.ok || !result.success) {
+    if (error) {
       return {
         ok: false,
         message:
-          result.message ||
+          error.message ||
           "Something went wrong sending the message. Please try again or reach out via LinkedIn.",
       };
     }
