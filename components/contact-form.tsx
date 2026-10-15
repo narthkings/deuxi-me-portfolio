@@ -12,7 +12,7 @@ const initialState: ContactState = {
 };
 
 const fieldClass =
-  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/70 transition-colors focus:border-accent focus:outline-none";
+  "w-full rounded-2xl border border-border bg-surface px-4 py-3 text-base text-ink placeholder:text-muted/70 transition-colors focus:border-accent focus:outline-none";
 
 export function ContactForm() {
   const formRef = useRef<HTMLFormElement>(null);
