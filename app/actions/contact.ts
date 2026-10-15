@@ -43,7 +43,7 @@ export async function submitContact(
     };
   }
 
-  const accessKey = process.env.WEB3FORMS_ACCESS_KEY;
+  const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
 
   if (!accessKey) {
     return {
