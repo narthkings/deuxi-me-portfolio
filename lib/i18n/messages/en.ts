@@ -156,12 +156,6 @@ export const en: Messages = {
       summary:
         "Built frontend surfaces for a lending suite that helps financial institutions create, launch, and manage credit products end to end.",
     },
-    abi: {
-      role: "Frontend Engineer (React)",
-      dates: "Personal project",
-      summary:
-        "React frontend engineering on a personal product build — focused on polished UI and practical feature delivery.",
-    },
     octosoft: {
       role: "Lead Frontend Engineer",
       dates: "Jul 2021 — Sep 2023",
@@ -208,10 +202,6 @@ export const en: Messages = {
     octosoft: {
       description:
         "Affordable health plans and telemedicine — an all-in-one platform to talk to a doctor, access health plans, and manage care online.",
-    },
-    abi: {
-      description:
-        "Web3 learning startup waitlist and product frontend — monorepo migration for reusable packages and smoother CI/CD across projects.",
     },
     devmeet: {
       description:

@@ -162,12 +162,6 @@ export const fr: Messages = {
       summary:
         "Surfaces frontend pour une suite de crédit aidant les institutions financières à créer, lancer et gérer des produits de crédit de bout en bout.",
     },
-    abi: {
-      role: "Ingénieur frontend (React)",
-      dates: "Projet personnel",
-      summary:
-        "Ingénierie frontend React sur un produit personnel — UI soignée et livraison concrète de fonctionnalités.",
-    },
     octosoft: {
       role: "Lead ingénieur frontend",
       dates: "juil. 2021 — sept. 2023",
@@ -214,10 +208,6 @@ export const fr: Messages = {
     octosoft: {
       description:
         "Plans de santé abordables et télémédecine — plateforme pour parler à un médecin, accéder aux offres et gérer les soins en ligne.",
-    },
-    abi: {
-      description:
-        "Frontend waitlist et produit pour une startup d’apprentissage Web3 — migration monorepo pour des packages réutilisables et un CI/CD plus fluide.",
     },
     devmeet: {
       description:

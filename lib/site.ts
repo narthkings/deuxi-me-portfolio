@@ -30,7 +30,6 @@ export const experience: ExperienceRef[] = [
   { id: "npf", company: "Nigerian Police Force (NPF)" },
   { id: "bayse", company: "Bayse Markets (formerly Gowagr)" },
   { id: "evolve", company: "Evolve Credit" },
-  { id: "abi", company: "ABI Smartly" },
   { id: "octosoft", company: "Octosoft Technologies" },
   { id: "intelligent", company: "Intelligent Innovations" },
   { id: "deveote", company: "Deveote" },
@@ -67,12 +66,6 @@ export const projects: ProjectRef[] = [
     id: "octosoft",
     title: "Octosoft",
     href: "https://www.octodoc.com/",
-    stack: ["React", "TypeScript"],
-  },
-  {
-    id: "abi",
-    title: "ABI Smartly",
-    href: "https://abismartly.com",
     stack: ["React", "TypeScript"],
   },
   {
