@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { Reveal } from "@/components/reveal";
 import { TechIcon } from "@/components/tech-icon";
+import { getMessages } from "@/lib/i18n/get-messages";
+import { buildPageMetadata } from "@/lib/i18n/metadata";
+import { isLocale, localizedPath, type Locale } from "@/lib/i18n/routing";
 import { featuredExperience, site, skills } from "@/lib/site";
 
 const techShowcase = [
@@ -9,28 +13,46 @@ const techShowcase = [
   ...skills.data.slice(0, 2),
 ];
 
-const personJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: site.name,
-  jobTitle: site.title,
-  url: site.url,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: "Lagos",
-    addressCountry: "NG",
-  },
-  sameAs: site.socials.map((social) => social.href),
-  knowsAbout: [
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Frontend Engineering",
-    "User Experience",
-  ],
-};
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]">) {
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) return {};
+  const messages = getMessages(raw);
+  return buildPageMetadata({
+    locale: raw,
+    path: "/",
+    description: messages.meta.description,
+  });
+}
 
-export default function Home() {
+export default async function Home({ params }: PageProps<"/[locale]">) {
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) notFound();
+  const locale: Locale = raw;
+  const messages = getMessages(locale);
+
+  const personJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: site.name,
+    jobTitle: messages.home.jobTitle,
+    url: site.url,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Lagos",
+      addressCountry: "NG",
+    },
+    sameAs: site.socials.map((social) => social.href),
+    knowsAbout: [
+      "React",
+      "Next.js",
+      "TypeScript",
+      "Frontend Engineering",
+      "User Experience",
+    ],
+  };
+
   return (
     <div>
       <script
@@ -53,42 +75,42 @@ export default function Home() {
               className="animate-fade-in text-sm font-medium text-accent"
               style={{ ["--delay" as string]: "0ms" }}
             >
-              {site.location}
+              {messages.home.location}
             </p>
             <h1
               className="animate-fade-up mt-4 text-4xl font-bold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-6xl"
               style={{ ["--delay" as string]: "80ms" }}
             >
-              Hello I&apos;m{" "}
+              {messages.home.hello}{" "}
               <span className="text-ink">{site.name}</span>
             </h1>
             <p
               className="animate-fade-up mt-4 text-xl font-medium text-muted sm:text-2xl"
               style={{ ["--delay" as string]: "160ms" }}
             >
-              {site.title}
+              {messages.home.jobTitle}
             </p>
             <p
               className="animate-fade-up mt-5 max-w-xl text-base leading-7 text-muted sm:text-lg"
               style={{ ["--delay" as string]: "240ms" }}
             >
-              {site.bio}
+              {messages.home.bio}
             </p>
             <div
               className="animate-fade-up mt-8 flex flex-wrap gap-3"
               style={{ ["--delay" as string]: "320ms" }}
             >
               <Link
-                href="/projects"
+                href={localizedPath(locale, "/projects")}
                 className="btn-ink inline-flex items-center border border-ink bg-ink px-6 py-3 text-sm font-medium text-bg no-underline hover:border-accent hover:bg-accent"
               >
-                View projects
+                {messages.home.viewProjects}
               </Link>
               <Link
-                href="/contact"
+                href={localizedPath(locale, "/contact")}
                 className="btn-ghost inline-flex items-center border border-border bg-surface px-6 py-3 text-sm font-medium text-ink no-underline"
               >
-                Contact me
+                {messages.home.contactMe}
               </Link>
             </div>
           </div>
@@ -111,26 +133,28 @@ export default function Home() {
 
             <div className="glass-chip absolute right-0 top-6 rounded-2xl px-4 py-3 text-sm sm:right-4 sm:top-10">
               <p className="text-xs font-medium uppercase tracking-wide text-muted">
-                Status
+                {messages.home.status}
               </p>
               <p className="mt-1 font-semibold text-accent">
-                {site.availability}
+                {messages.home.availability}
               </p>
             </div>
 
             <div className="glass-chip mt-6 w-full max-w-xs rounded-2xl px-5 py-4">
               <dl className="space-y-2 text-sm">
                 <div className="flex justify-between gap-4">
-                  <dt className="text-muted">Focus</dt>
+                  <dt className="text-muted">{messages.home.focus}</dt>
                   <dd className="font-medium text-ink">React / Next.js</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-muted">Languages</dt>
+                  <dt className="text-muted">{messages.home.languages}</dt>
                   <dd className="font-medium text-ink">EN · FR</dd>
                 </div>
                 <div className="flex justify-between gap-4">
-                  <dt className="text-muted">Based in</dt>
-                  <dd className="font-medium text-ink">{site.location}</dd>
+                  <dt className="text-muted">{messages.home.basedIn}</dt>
+                  <dd className="font-medium text-ink">
+                    {messages.home.location}
+                  </dd>
                 </div>
               </dl>
             </div>
@@ -142,19 +166,25 @@ export default function Home() {
         <Reveal>
           <div className="surface-card grid gap-8 p-8 sm:p-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center">
             <div>
-              <p className="text-sm font-medium text-accent">About</p>
+              <p className="text-sm font-medium text-accent">
+                {messages.home.aboutKicker}
+              </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">
-                About me
+                {messages.home.aboutTitle}
               </h2>
             </div>
             <div>
-              <p className="text-base leading-7 text-muted">{site.description}</p>
-              <p className="mt-4 text-base leading-7 text-muted">{site.focus}</p>
+              <p className="text-base leading-7 text-muted">
+                {messages.home.description}
+              </p>
+              <p className="mt-4 text-base leading-7 text-muted">
+                {messages.home.focusBlurb}
+              </p>
               <Link
-                href="/resume"
+                href={localizedPath(locale, "/resume")}
                 className="btn-ghost mt-6 inline-flex border border-border px-5 py-2.5 text-sm font-medium text-ink no-underline"
               >
-                Learn more
+                {messages.home.learnMore}
               </Link>
             </div>
           </div>
@@ -166,10 +196,10 @@ export default function Home() {
           <Reveal>
             <div className="text-center">
               <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-                My tech stack
+                {messages.home.stackTitle}
               </h2>
               <p className="mt-3 text-band-muted">
-                Technologies I specialize in
+                {messages.home.stackSubtitle}
               </p>
             </div>
           </Reveal>
@@ -196,54 +226,59 @@ export default function Home() {
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-accent">Selected work</p>
+              <p className="text-sm font-medium text-accent">
+                {messages.home.selectedWorkKicker}
+              </p>
               <h2 className="mt-2 text-3xl font-bold tracking-tight text-ink">
-                Recent roles
+                {messages.home.selectedWorkTitle}
               </h2>
             </div>
             <Link
-              href="/projects"
+              href={localizedPath(locale, "/projects")}
               className="text-sm font-medium text-muted no-underline transition-colors hover:text-accent"
             >
-              See all work →
+              {messages.home.seeAllWork}
             </Link>
           </div>
         </Reveal>
 
         <ul className="mt-10 grid gap-4">
-          {featuredExperience.map((item, index) => (
-            <Reveal
-              key={`${item.company}-${item.role}`}
-              as="li"
-              delayMs={index * 80}
-              className="surface-card p-6 sm:p-7"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="text-xl font-semibold text-ink">
-                    {item.company}
+          {featuredExperience.map((item, index) => {
+            const copy = messages.experience[item.id];
+            return (
+              <Reveal
+                key={item.id}
+                as="li"
+                delayMs={index * 80}
+                className="surface-card p-6 sm:p-7"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xl font-semibold text-ink">
+                      {item.company}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{copy.role}</p>
+                  </div>
+                  <p className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+                    {copy.dates}
                   </p>
-                  <p className="mt-1 text-sm text-muted">{item.role}</p>
                 </div>
-                <p className="rounded-full bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
-                  {item.dates}
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-muted">
+                  {copy.summary}
                 </p>
-              </div>
-              <p className="mt-4 max-w-3xl text-sm leading-6 text-muted">
-                {item.summary}
-              </p>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </ul>
 
         <Reveal delayMs={120}>
           <p className="mt-8 text-sm text-muted">
-            Prefer the long form?{" "}
+            {messages.home.preferLongForm}{" "}
             <Link
-              href="/resume"
+              href={localizedPath(locale, "/resume")}
               className="font-medium text-accent no-underline hover:underline"
             >
-              Read the full resume
+              {messages.home.readFullResume}
             </Link>
             .
           </p>

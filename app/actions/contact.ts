@@ -1,23 +1,42 @@
 "use server";
 
+import { getMessages } from "@/lib/i18n/get-messages";
+import { isLocale, type Locale } from "@/lib/i18n/routing";
 import { Resend } from "resend";
+
+export type ContactErrorCode =
+  | "required"
+  | "invalidEmail"
+  | "messageShort"
+  | "notConfigured"
+  | "sendFailed"
+  | "network"
+  | "success";
 
 export type ContactState = {
   ok: boolean;
   message: string;
+  code?: ContactErrorCode;
 };
 
 function asString(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function resolveLocale(value: string): Locale {
+  return isLocale(value) ? value : "en";
+}
+
 export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
+  const locale = resolveLocale(asString(formData.get("locale")));
+  const errors = getMessages(locale).contactErrors;
+
   // Honeypot — bots fill this; humans leave it empty
   if (asString(formData.get("botcheck"))) {
-    return { ok: true, message: "Message sent. I will get back to you soon." };
+    return { ok: true, message: errors.success, code: "success" };
   }
 
   const name = asString(formData.get("name"));
@@ -25,24 +44,15 @@ export async function submitContact(
   const message = asString(formData.get("message"));
 
   if (!name || !email || !message) {
-    return {
-      ok: false,
-      message: "Please fill in your name, email, and message.",
-    };
+    return { ok: false, message: errors.required, code: "required" };
   }
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return {
-      ok: false,
-      message: "Please enter a valid email address.",
-    };
+    return { ok: false, message: errors.invalidEmail, code: "invalidEmail" };
   }
 
   if (message.length < 10) {
-    return {
-      ok: false,
-      message: "A little more detail in the message would help.",
-    };
+    return { ok: false, message: errors.messageShort, code: "messageShort" };
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim();
@@ -54,8 +64,8 @@ export async function submitContact(
   if (!apiKey || !toEmail) {
     return {
       ok: false,
-      message:
-        "The contact form is not configured yet. Please try again later or reach out via LinkedIn.",
+      message: errors.notConfigured,
+      code: "notConfigured",
     };
   }
 
@@ -66,32 +76,19 @@ export async function submitContact(
       to: [toEmail],
       replyTo: email,
       subject: `Portfolio message from ${name}`,
-      text: [
-        `Name: ${name}`,
-        `Email: ${email}`,
-        "",
-        message,
-      ].join("\n"),
+      text: [`Name: ${name}`, `Email: ${email}`, "", message].join("\n"),
     });
 
     if (error) {
       return {
         ok: false,
-        message:
-          error.message ||
-          "Something went wrong sending the message. Please try again or reach out via LinkedIn.",
+        message: error.message || errors.sendFailed,
+        code: "sendFailed",
       };
     }
 
-    return {
-      ok: true,
-      message: "Message sent. I will get back to you soon.",
-    };
+    return { ok: true, message: errors.success, code: "success" };
   } catch {
-    return {
-      ok: false,
-      message:
-        "Network error while sending. Please try again or reach out via LinkedIn.",
-    };
+    return { ok: false, message: errors.network, code: "network" };
   }
 }

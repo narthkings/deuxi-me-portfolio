@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { notFound } from "next/navigation";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { getMessages } from "@/lib/i18n/get-messages";
+import {
+  defaultLocale,
+  isLocale,
+  locales,
+  type Locale,
+} from "@/lib/i18n/routing";
 import { site } from "@/lib/site";
-import "./globals.css";
+import "../globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,59 +23,48 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = `${site.name} — ${site.title}`;
+const defaultMessages = getMessages(defaultLocale);
+const defaultTitle = `${site.name} — ${defaultMessages.meta.title}`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: title,
+    default: defaultTitle,
     template: `%s — ${site.name}`,
   },
-  description: site.description,
+  description: defaultMessages.meta.description,
   applicationName: site.name,
   authors: [{ name: site.name, url: site.url }],
   creator: site.name,
-  keywords: [
-    "Dumto Imoh",
-    "Senior Frontend Engineer",
-    "React",
-    "Next.js",
-    "TypeScript",
-    "Lagos",
-    "portfolio",
-  ],
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title,
-    description: site.description,
-    url: "/",
-    siteName: site.name,
-    locale: "en_US",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title,
-    description: site.description,
-  },
+  keywords: defaultMessages.meta.keywords,
   robots: {
     index: true,
     follow: true,
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: LayoutProps<"/[locale]">) {
+  const { locale: raw } = await params;
+  if (!isLocale(raw)) notFound();
+  const locale: Locale = raw;
+  const messages = getMessages(locale);
+
   return (
     <html
-      lang="en"
+      lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-bg font-sans text-ink">
-        <SiteHeader />
+        <SiteHeader locale={locale} messages={messages} />
         <main className="flex-1">{children}</main>
-        <SiteFooter />
+        <SiteFooter messages={messages} />
       </body>
     </html>
   );

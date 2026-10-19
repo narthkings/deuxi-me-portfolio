@@ -3,11 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useState } from "react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { SocialLinks } from "@/components/social-links";
-import { site } from "@/lib/site";
+import {
+  localizedPath,
+  stripLocale,
+  type Locale,
+} from "@/lib/i18n/routing";
+import type { Messages } from "@/lib/i18n/types";
+import { navItems, site } from "@/lib/site";
 
-export function SiteHeader() {
+type SiteHeaderProps = {
+  locale: Locale;
+  messages: Messages;
+};
+
+export function SiteHeader({ locale, messages }: SiteHeaderProps) {
   const pathname = usePathname();
+  const currentPath = stripLocale(pathname);
   const [open, setOpen] = useState(false);
   const menuId = useId();
 
@@ -32,7 +45,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-40 border-b border-border/80 bg-bg/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-4 sm:px-8">
         <Link
-          href="/"
+          href={localizedPath(locale, "/")}
           className="group flex items-center gap-2 no-underline"
           onClick={closeMenu}
         >
@@ -51,15 +64,16 @@ export function SiteHeader() {
           aria-label="Primary"
           className="hidden items-center gap-7 text-sm font-medium md:flex"
         >
-          {site.nav.map((item) => {
+          {navItems.map((item) => {
+            const href = localizedPath(locale, item.href);
             const active =
               item.href === "/"
-                ? pathname === "/"
-                : pathname.startsWith(item.href);
+                ? currentPath === "/"
+                : currentPath.startsWith(item.href);
             return (
               <Link
                 key={item.href}
-                href={item.href}
+                href={href}
                 data-active={active ? "true" : "false"}
                 className={
                   active
@@ -67,13 +81,19 @@ export function SiteHeader() {
                     : "nav-link text-muted hover:text-ink"
                 }
               >
-                {item.label}
+                {messages.nav[item.key]}
               </Link>
             );
           })}
         </nav>
 
-        <SocialLinks className="hidden items-center gap-3 md:flex" />
+        <div className="hidden items-center gap-4 md:flex">
+          <LanguageSwitcher
+            locale={locale}
+            label={messages.chrome.language}
+          />
+          <SocialLinks className="flex items-center gap-3" />
+        </div>
 
         <button
           type="button"
@@ -82,7 +102,7 @@ export function SiteHeader() {
           aria-controls={menuId}
           onClick={() => setOpen((value) => !value)}
         >
-          {open ? "Close" : "Menu"}
+          {open ? messages.chrome.close : messages.chrome.menu}
         </button>
       </div>
 
@@ -92,15 +112,16 @@ export function SiteHeader() {
           className="animate-slide-down border-t border-border bg-surface/95 px-6 py-6 backdrop-blur-sm md:hidden"
         >
           <nav aria-label="Mobile" className="flex flex-col gap-4">
-            {site.nav.map((item, index) => {
+            {navItems.map((item, index) => {
+              const href = localizedPath(locale, item.href);
               const active =
                 item.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.href);
+                  ? currentPath === "/"
+                  : currentPath.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
-                  href={item.href}
+                  href={href}
                   onClick={closeMenu}
                   className={
                     active
@@ -109,11 +130,17 @@ export function SiteHeader() {
                   }
                   style={{ ["--delay" as string]: `${index * 50}ms` }}
                 >
-                  {item.label}
+                  {messages.nav[item.key]}
                 </Link>
               );
             })}
           </nav>
+          <div className="mt-6">
+            <LanguageSwitcher
+              locale={locale}
+              label={messages.chrome.language}
+            />
+          </div>
           <SocialLinks
             className="mt-8 flex flex-wrap gap-4 border-t border-border pt-6"
             iconClassName="h-6 w-6"
